@@ -1,0 +1,169 @@
+require 'spec_helper'
+
+describe Spira::ActiveRecordIsomorphisms do
+  before do
+    Object.send(:remove_const, :User) if defined? User
+    Object.send(:remove_const, :Person) if defined? Person
+    Object.send(:remove_const, :IsomorphicPerson) if defined? IsomorphicPerson
+
+    class User < ActiveRecord::Base; end
+
+    class Person < Spira::Base
+      type FOAF.Person
+
+      configure base_uri: 'http://example.org/example/people',
+        default_vocabulary: 'http://example.org/example/vocab'
+
+      property :name, predicate: FOAF.name, type: String
+    end
+
+    class IsomorphicPerson < Person
+      isomorphic_with :user
+    end
+  end
+
+  let(:new_user_bob) { User.create(email: 'bob@example.com') }
+
+  let(:bob_pair) do
+    user_bob = new_user_bob
+    iso_bob = IsomorphicPerson.for('bob')
+    iso_bob.name = 'Bob'
+    iso_bob.user = user_bob
+    [iso_bob, user_bob]
+  end
+
+  describe "defining isomorphisms" do
+    context "when the ActiveRecord class does not exist" do
+      it "raises an error" do
+        Object.send(:remove_const, :Person) if defined? Person
+        expect {
+          class Person < Spira::Base
+            type FOAF.Person
+            configure default_vocabulary: 'http://example.org/example/vocab'
+            property :name, predicate: FOAF.name, type: String
+
+            isomorphic_with :fake_class
+          end
+        }.to raise_error(NameError, /:fake_class/)
+      end
+    end
+
+    context "when no default_vocabulary has been set" do
+      it "raises an error" do
+        Object.send(:remove_const, :User) if defined? User
+        Object.send(:remove_const, :Person) if defined? Person
+        expect {
+          class User < ActiveRecord::Base; end
+          class Person < Spira::Base
+            type FOAF.Person
+            property :name, predicate: FOAF.name, type: String
+
+            isomorphic_with :user
+          end
+        }.to raise_error(Spira::ActiveRecordIsomorphisms::NoDefaultVocabularySetError)
+      end
+    end
+
+    context "when the isomorphism has already been defined" do
+      it "raises an error" do
+        Object.send(:remove_const, :User) if defined? User
+        Object.send(:remove_const, :Person) if defined? Person
+        expect {
+          class User < ActiveRecord::Base; end
+          class Person < Spira::Base
+            type FOAF.Person
+            configure default_vocabulary: 'http://example.org/example/vocab'
+            property :name, predicate: FOAF.name, type: String
+
+            isomorphic_with :user
+            isomorphic_with :user
+          end
+        }.to raise_error(Spira::ActiveRecordIsomorphisms::IsomorphismAlreadyDefinedError)
+      end
+    end
+  end
+
+  describe "persistence" do
+    it "adds a foreign key property to the Spira model when there is an associated model" do
+      iso_bob = IsomorphicPerson.for('bob')
+      expect(iso_bob.attributes.keys).to include('user_id')
+    end
+
+    it "does not add a foreign key property to the Spira model when there is no associated model" do
+      person_bob = Person.for('bob')
+      expect(person_bob.attributes.keys).to_not include('user_id')
+    end
+  end
+
+  context "when an isomorphism has been established" do
+    describe "setting the associated model" do
+      describe "on the Spira model" do
+        it "sets the user_id on the Spira model" do
+          iso_bob = IsomorphicPerson.for('bob')
+          user_bob = new_user_bob
+          iso_bob.user = user_bob
+          expect(iso_bob.user_id).to eq(user_bob.id)
+        end
+      end
+
+      describe "on the ActiveRecord model" do
+        it "sets the user_id on the Spira model" do
+          iso_bob = IsomorphicPerson.for('bob')
+          user_bob = new_user_bob
+          user_bob.person = iso_bob
+          expect(iso_bob.user_id).to eq(user_bob.id)
+        end
+      end
+    end
+
+    describe "accessing the associated model" do
+      describe "from the Spira model" do
+        it "yields the correct user" do
+          iso_bob, user_bob = bob_pair
+          expect(iso_bob.user).to eq(user_bob)
+        end
+      end
+
+      describe "from the ActiveRecord model" do
+        it "yields the correct person" do
+          iso_bob, user_bob = bob_pair
+          expect(user_bob.person).to eq(iso_bob)
+        end
+      end
+    end
+  end
+
+  context "when an isomorphism has not been established" do
+    describe "setting associated models" do
+      describe "on the Spira model" do
+        it "raises an error" do
+          person_bob = Person.for('bob')
+          expect { person_bob.user = new_user_bob }.to raise_error(NoMethodError)
+        end
+      end
+
+      describe "on the ActiveRecord model" do
+        it "raises an error" do
+          user_bob = new_user_bob
+          expect { user_bob.person = Person.for('bob') }.to raise_error(NoMethodError)
+        end
+      end
+    end
+
+    describe "accessing associated models" do
+      describe "from the Spira model" do
+        it "raises an error" do
+          person_bob = Person.for('bob')
+          expect { person_bob.user }.to raise_error(NoMethodError)
+        end
+      end
+
+      describe "from the ActiveRecord model" do
+        it "raises an error" do
+          user_bob = new_user_bob
+          expect { user_bob.person }.to raise_error(NoMethodError)
+        end
+      end
+    end
+  end
+end
