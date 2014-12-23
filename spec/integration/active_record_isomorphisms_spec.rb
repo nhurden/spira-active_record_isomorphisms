@@ -29,6 +29,7 @@ describe Spira::ActiveRecordIsomorphisms do
     iso_bob = IsomorphicPerson.for('bob')
     iso_bob.name = 'Bob'
     iso_bob.user = user_bob
+    iso_bob.save
     [iso_bob, user_bob]
   end
 
@@ -110,7 +111,7 @@ describe Spira::ActiveRecordIsomorphisms do
         it "sets the user_id on the Spira model" do
           iso_bob = IsomorphicPerson.for('bob')
           user_bob = new_user_bob
-          user_bob.person = iso_bob
+          user_bob.isomorphic_person = iso_bob
           expect(iso_bob.user_id).to eq(user_bob.id)
         end
       end
@@ -127,7 +128,7 @@ describe Spira::ActiveRecordIsomorphisms do
       describe "from the ActiveRecord model" do
         it "yields the correct person" do
           iso_bob, user_bob = bob_pair
-          expect(user_bob.person).to eq(iso_bob)
+          expect(user_bob.isomorphic_person).to eq(iso_bob)
         end
       end
     end
