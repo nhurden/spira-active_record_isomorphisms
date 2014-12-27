@@ -12,14 +12,6 @@ module Spira
       model.extend ClassMethods
     end
 
-    private
-
-    # Update the id field corresponding to `name` on the `target` with the id of `new_object`
-    def update_foreign_object(name, new_object, target=self)
-      method_name = (name.to_s + '_id=').to_sym
-      target.send(method_name, new_object.id)
-    end
-
     module ClassMethods
       def isomorphic_with(ar_name)
         raise NoDefaultVocabularySetError, 'A default vocabulary must be set' unless default_vocabulary
@@ -75,7 +67,8 @@ module Spira
 
         # Set the ActiveRecord model on the Spira model
         define_method((ar_name.to_s + '=').to_sym) do |new_model|
-          update_foreign_object(ar_name, new_model)
+          method_name = (ar_name.to_s + '_id=').to_sym
+          self.send(method_name, new_model.try(:id))
         end
       end
 
