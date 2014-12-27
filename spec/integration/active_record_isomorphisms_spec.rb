@@ -61,7 +61,7 @@ describe Spira::ActiveRecordIsomorphisms do
 
             isomorphic_with :user
           end
-        }.to raise_error(Spira::ActiveRecordIsomorphisms::NoDefaultVocabularySetError)
+        }.to raise_error(Spira::ActiveRecordIsomorphisms::NoDefaultVocabularyError)
       end
     end
 

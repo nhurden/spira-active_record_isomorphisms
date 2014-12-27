@@ -5,7 +5,7 @@ require 'spira/active_record_isomorphisms/version'
 module Spira
   module ActiveRecordIsomorphisms
     # Errors
-    class NoDefaultVocabularySetError < StandardError; end
+    class NoDefaultVocabularyError < StandardError; end
     class IsomorphismAlreadyDefinedError < StandardError; end
 
     def self.included(model)
@@ -14,7 +14,7 @@ module Spira
 
     module ClassMethods
       def isomorphic_with(ar_name)
-        raise NoDefaultVocabularySetError, 'A default vocabulary must be set' unless default_vocabulary
+        raise NoDefaultVocabularyError, 'A default vocabulary must be set' unless default_vocabulary
 
         # Create the foreign key property
         id_sym = (ar_name.to_s + '_id').to_sym
