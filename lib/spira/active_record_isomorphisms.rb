@@ -14,10 +14,6 @@ module Spira
 
     private
 
-    def isomorphism_established?
-      attributes.include? self.class.id_sym
-    end
-
     # Update the id field corresponding to `name` on the `target` with the id of `new_object`
     def update_foreign_object(name, new_object, target=self)
       method_name = (name.to_s + '_id=').to_sym
@@ -42,7 +38,6 @@ module Spira
 
       private
 
-      # TODO
       def define_active_record_methods(ar_name)
         ar_class = model_class_for_sym(ar_name)
         spira_name = self.name.underscore.to_sym
