@@ -86,12 +86,12 @@ describe Spira::ActiveRecordIsomorphisms do
   end
 
   describe "persistence" do
-    it "adds a foreign key property to the Spira model when there is an associated model" do
+    it "adds a foreign key property to the Spira model when there is an isomorphism" do
       iso_bob = IsomorphicPerson.for('bob')
       expect(iso_bob.attributes.keys).to include('user_id')
     end
 
-    it "does not add a foreign key property to the Spira model when there is no associated model" do
+    it "does not add a foreign key property to the Spira model when there is no isomorphism" do
       person_bob = Person.for('bob')
       expect(person_bob.attributes.keys).to_not include('user_id')
     end
