@@ -143,17 +143,35 @@ describe Spira::ActiveRecordIsomorphisms do
     end
 
     describe "accessing the associated model" do
-      describe "from the Spira model" do
-        it "yields the correct user" do
-          iso_bob, user_bob = bob_pair
-          expect(iso_bob.user).to eq(user_bob)
+      context "when there is an associated model" do
+        describe "from the Spira model" do
+          it "yields the correct user" do
+            iso_bob, user_bob = bob_pair
+            expect(iso_bob.user).to eq(user_bob)
+          end
+        end
+
+        describe "from the ActiveRecord model" do
+          it "yields the correct person" do
+            iso_bob, user_bob = bob_pair
+            expect(user_bob.isomorphic_person).to eq(iso_bob)
+          end
         end
       end
 
-      describe "from the ActiveRecord model" do
-        it "yields the correct person" do
-          iso_bob, user_bob = bob_pair
-          expect(user_bob.isomorphic_person).to eq(iso_bob)
+      context "when there is no associated model" do
+        describe "from the Spira model" do
+          it "yields nil" do
+            iso_bob = IsomorphicPerson.for('bob')
+            expect(iso_bob.user).to be_nil
+          end
+        end
+
+        describe "from the ActiveRecord model" do
+          it "yields nil" do
+            user_bob = new_user_bob
+            expect(user_bob.isomorphic_person).to be_nil
+          end
         end
       end
     end

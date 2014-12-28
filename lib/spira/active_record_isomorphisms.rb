@@ -65,7 +65,7 @@ module Spira
         id_getter_name = id_getter(ar_name)
         define_method(ar_name) do
           id = self.send(id_getter_name)
-          ar_class.find(id)
+          id ? ar_class.find(id) : nil
         end
 
         # Set the ActiveRecord model on the Spira model
