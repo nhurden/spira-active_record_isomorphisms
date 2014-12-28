@@ -32,15 +32,15 @@ module Spira
 
       def define_active_record_methods(ar_name)
         ar_class = model_class_for_sym(ar_name)
-        spira_name = self.name.underscore.to_sym
         spira_class = self
+        spira_name = spira_class.name.underscore.to_sym
 
         # Get the Spira model from the ActiveRecord model
         ar_class.send(:define_method, spira_name) do
           predicate = RDF::Vocabulary.new(spira_class.default_vocabulary)["/#{ar_name}_id"]
           object = RDF::Literal.new(id, datatype: RDF::XSD.integer)
-          subject = Spira.repository.query(predicate: predicate, object: object).first.try(:subject)
-          subject ? spira_class.for(subject) : nil
+          model_iri = Spira.repository.query(predicate: predicate, object: object).first.try(:subject)
+          model_iri ? spira_class.for(model_iri) : nil
         end
 
         # Set the Spira model on the ActiveRecord model
