@@ -79,7 +79,8 @@ describe Spira::ActiveRecordIsomorphisms do
             isomorphic_with :user
             isomorphic_with :user
           end
-        }.to raise_error(Spira::ActiveRecordIsomorphisms::IsomorphismAlreadyDefinedError)
+        }.to raise_error(Spira::ActiveRecordIsomorphisms::IsomorphismAlreadyDefinedError,
+            "An isomorphism with user has already been established or the property user_id is already in use.")
       end
     end
   end
