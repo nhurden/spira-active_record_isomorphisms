@@ -5,8 +5,9 @@ require 'spira/active_record_isomorphisms/version'
 module Spira
   module ActiveRecordIsomorphisms
     # Errors
-    class NoDefaultVocabularyError < StandardError; end
+    class NoDefaultVocabularyError       < StandardError; end
     class IsomorphismAlreadyDefinedError < StandardError; end
+    class TypeMismatchError              < StandardError; end
 
     def self.included(model)
       model.extend ClassMethods
@@ -62,9 +63,13 @@ module Spira
         # Set the Spira model on the ActiveRecord model by updating ids on the Spira models
         id_setter_name = id_setter(ar_name)
         ar_class.send(:define_method, setter(spira_name)) do |new_model|
-          old_model = self.send(spira_name)
-          old_model.send(id_setter_name, nil) if old_model
-          new_model.send(id_setter_name, self.id) if new_model
+          if new_model.class == spira_class
+            old_model = self.send(spira_name)
+            old_model.send(id_setter_name, nil) if old_model
+            new_model.send(id_setter_name, self.id) if new_model
+          elsif new_model
+            raise TypeMismatchError, "Expected a model of type #{spira_class.name}, but was of type #{new_model.class.name}"
+          end
         end
       end
 
@@ -81,7 +86,11 @@ module Spira
         # Set the ActiveRecord model on the Spira model
         id_setter_name = id_setter(ar_name)
         define_method(setter(ar_name)) do |new_model|
-          self.send(id_setter_name, new_model.try(:id))
+          if new_model.class == ar_class
+            self.send(id_setter_name, new_model.try(:id))
+          elsif new_model
+            raise TypeMismatchError, "Expected a model of type #{ar_class.name}, but was of type #{new_model.class.name}"
+          end
         end
       end
 

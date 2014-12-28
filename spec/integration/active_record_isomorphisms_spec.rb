@@ -100,20 +100,42 @@ describe Spira::ActiveRecordIsomorphisms do
   context "when an isomorphism has been established" do
     describe "setting the associated model" do
       describe "on the Spira model" do
-        it "sets the user_id on the Spira model" do
-          iso_bob = IsomorphicPerson.for('bob')
-          user_bob = new_user_bob
-          iso_bob.user = user_bob
-          expect(iso_bob.user_id).to eq(user_bob.id)
+        context "with a valid ActiveRecord model" do
+          it "sets the user_id on the Spira model" do
+            iso_bob = IsomorphicPerson.for('bob')
+            user_bob = new_user_bob
+            iso_bob.user = user_bob
+            expect(iso_bob.user_id).to eq(user_bob.id)
+          end
+        end
+
+        context "with an invalid ActiveRecord model" do
+          it "raises an error" do
+            iso_bob = IsomorphicPerson.for('bob')
+            expect { iso_bob.user = "Not a user" }.to raise_error(
+              Spira::ActiveRecordIsomorphisms::TypeMismatchError,
+              "Expected a model of type User, but was of type String")
+          end
         end
       end
 
       describe "on the ActiveRecord model" do
-        it "sets the user_id on the Spira model" do
-          iso_bob = IsomorphicPerson.for('bob')
-          user_bob = new_user_bob
-          user_bob.isomorphic_person = iso_bob
-          expect(iso_bob.user_id).to eq(user_bob.id)
+        context "with a valid Spira model" do
+          it "sets the user_id on the Spira model" do
+            iso_bob = IsomorphicPerson.for('bob')
+            user_bob = new_user_bob
+            user_bob.isomorphic_person = iso_bob
+            expect(iso_bob.user_id).to eq(user_bob.id)
+          end
+        end
+
+        context "with an invalid Spira model" do
+          it "raises an error" do
+            user_bob = new_user_bob
+            expect { user_bob.isomorphic_person = "Not an person" }.to raise_error(
+              Spira::ActiveRecordIsomorphisms::TypeMismatchError,
+              "Expected a model of type IsomorphicPerson, but was of type String")
+          end
         end
       end
     end
