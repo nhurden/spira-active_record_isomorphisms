@@ -33,8 +33,8 @@ module Spira
         opts.reverse_merge!({ delegation: true })
 
         ar_class = model_class_for_sym(ar_name)
-        define_active_record_methods(ar_name, ar_class)
         define_spira_methods(ar_name, ar_class)
+        define_active_record_methods(ar_name, ar_class)
 
         if opts[:delegation]
           define_spira_attr_delegations(ar_name, ar_class)
@@ -60,6 +60,25 @@ module Spira
         append_to_symbol(name, '_id=')
       end
 
+      def define_spira_methods(ar_name, ar_class)
+        # Get the ActiveRecord model from the Spira model
+        id_getter_name = id_getter(ar_name)
+        define_method(ar_name) do
+          id = self.send(id_getter_name)
+          ar_class.find(id)
+        end
+
+        # Set the ActiveRecord model on the Spira model
+        id_setter_name = id_setter(ar_name)
+        define_method(setter(ar_name)) do |new_model|
+          if new_model.class == ar_class
+            self.send(id_setter_name, new_model.try(:id))
+          elsif new_model
+            raise TypeMismatchError, "Expected a model of type #{ar_class.name}, but was of type #{new_model.class.name}"
+          end
+        end
+      end
+
       def define_active_record_methods(ar_name, ar_class)
         spira_class = self
         spira_name = spira_class.name.underscore.to_sym
@@ -81,25 +100,6 @@ module Spira
             new_model.send(id_setter_name, self.id) if new_model
           elsif new_model
             raise TypeMismatchError, "Expected a model of type #{spira_class.name}, but was of type #{new_model.class.name}"
-          end
-        end
-      end
-
-      def define_spira_methods(ar_name, ar_class)
-        # Get the ActiveRecord model from the Spira model
-        id_getter_name = id_getter(ar_name)
-        define_method(ar_name) do
-          id = self.send(id_getter_name)
-          ar_class.find(id)
-        end
-
-        # Set the ActiveRecord model on the Spira model
-        id_setter_name = id_setter(ar_name)
-        define_method(setter(ar_name)) do |new_model|
-          if new_model.class == ar_class
-            self.send(id_setter_name, new_model.try(:id))
-          elsif new_model
-            raise TypeMismatchError, "Expected a model of type #{ar_class.name}, but was of type #{new_model.class.name}"
           end
         end
       end
