@@ -5,7 +5,6 @@ require 'spira/active_record_isomorphisms/version'
 
 module Spira
   module ActiveRecordIsomorphisms
-    # Errors
     class NoDefaultVocabularyError       < StandardError; end
     class IsomorphismAlreadyDefinedError < StandardError; end
     class TypeMismatchError              < StandardError; end
@@ -15,6 +14,11 @@ module Spira
     end
 
     module ClassMethods
+      # Define an isomorphism between a Spira model and an ActiveRecord model.
+      # @param [Symbol] ar_name The name of the ActiveRecord model in snake_case
+      # @option opts [Boolean] :delegation (true) Enable/disable delegation of attributes
+      # @raise [NoDefaultVocabularyError] if there is no default vocabulary set
+      # @raise [IsomorphismAlreadyDefinedError] if this isomorphism is already defined
       def isomorphic_with(ar_name, opts = {})
         raise NoDefaultVocabularyError, 'A default vocabulary must be set.' unless default_vocabulary
 
