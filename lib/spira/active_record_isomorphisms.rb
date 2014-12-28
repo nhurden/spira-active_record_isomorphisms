@@ -25,8 +25,11 @@ module Spira
         end
         property id_sym, type: Spira::Types::Integer
 
-        define_active_record_methods(ar_name)
-        define_spira_methods(ar_name)
+        ar_class = model_class_for_sym(ar_name)
+        define_active_record_methods(ar_name, ar_class)
+        define_spira_methods(ar_name, ar_class)
+        define_spira_attr_delegations(ar_name, ar_class)
+        define_active_record_attr_delegations(ar_name, ar_class)
       end
 
       private
@@ -47,8 +50,7 @@ module Spira
         append_to_symbol(name, '_id=')
       end
 
-      def define_active_record_methods(ar_name)
-        ar_class = model_class_for_sym(ar_name)
+      def define_active_record_methods(ar_name, ar_class)
         spira_class = self
         spira_name = spira_class.name.underscore.to_sym
 
@@ -73,9 +75,7 @@ module Spira
         end
       end
 
-      def define_spira_methods(ar_name)
-        ar_class = model_class_for_sym(ar_name)
-
+      def define_spira_methods(ar_name, ar_class)
         # Get the ActiveRecord model from the Spira model
         id_getter_name = id_getter(ar_name)
         define_method(ar_name) do
@@ -92,6 +92,23 @@ module Spira
             raise TypeMismatchError, "Expected a model of type #{ar_class.name}, but was of type #{new_model.class.name}"
           end
         end
+      end
+
+      # Delegate all ActiveRecord attributes, except those already defined on the Spira model
+      def define_spira_attr_delegations(ar_name, ar_class)
+        extend Forwardable
+
+        ar_attr_names = ar_class.attribute_names - properties.keys
+        def_delegators ar_name, *ar_attr_names
+      end
+
+      # Delegate all Spira attributes, except those already defined on the ActiveRecord model
+      def define_active_record_attr_delegations(ar_name, ar_class)
+        ar_class.extend Forwardable
+
+        spira_attr_names = properties.keys - ar_class.attribute_names
+        spira_name = self.name.underscore.to_sym
+        ar_class.def_delegators spira_name, *spira_attr_names
       end
 
       # Convert a class name symbol to the corresponding model class

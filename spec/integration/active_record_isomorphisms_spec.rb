@@ -155,6 +155,27 @@ describe Spira::ActiveRecordIsomorphisms do
         end
       end
     end
+
+    describe "accessing delegated properties" do
+      describe "from the Spira model" do
+        it "can access the email property" do
+          iso_bob, user_bob = bob_pair
+          expect(iso_bob.email).to eq(user_bob.email)
+        end
+
+        it "can access the encrypted_password property" do
+          iso_bob, user_bob = bob_pair
+          expect(iso_bob.encrypted_password).to eq(user_bob.encrypted_password)
+        end
+      end
+
+      describe "from the ActiveRecord model" do
+        it "can access the name property" do
+          iso_bob, user_bob = bob_pair
+          expect(user_bob.name).to eq(iso_bob.name)
+        end
+      end
+    end
   end
 
   context "when an isomorphism has not been established" do
