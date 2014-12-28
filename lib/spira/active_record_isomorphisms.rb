@@ -16,13 +16,13 @@ module Spira
       def isomorphic_with(ar_name)
         raise NoDefaultVocabularyError, 'A default vocabulary must be set' unless default_vocabulary
 
-        # Create the foreign key property
-        id_sym = (ar_name.to_s + '_id').to_sym
-        if properties.keys.include? id_sym.to_s
+        # Define the foreign key property
+        id = ar_name.to_s + '_id'
+        if properties.keys.include? id
           raise IsomorphismAlreadyDefinedError,
-            "An isomorphism with #{ar_name} has already been established or the property #{@id_sym} is already in use."
+            "An isomorphism with #{ar_name} has already been established or the property #{id} is already in use."
         end
-        property id_sym, type: Spira::Types::Integer
+        property id.to_sym, type: Spira::Types::Integer
 
         define_active_record_methods(ar_name)
         define_spira_methods(ar_name)
