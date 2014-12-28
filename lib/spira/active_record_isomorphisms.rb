@@ -1,3 +1,4 @@
+require 'active_support/core_ext/hash/reverse_merge'
 require 'active_support/core_ext/object/try'
 require 'active_support/core_ext/string/inflections'
 require 'spira/active_record_isomorphisms/version'
@@ -14,7 +15,7 @@ module Spira
     end
 
     module ClassMethods
-      def isomorphic_with(ar_name)
+      def isomorphic_with(ar_name, opts = {})
         raise NoDefaultVocabularyError, 'A default vocabulary must be set.' unless default_vocabulary
 
         # Define the foreign key property
@@ -25,11 +26,16 @@ module Spira
         end
         property id_sym, type: Spira::Types::Integer
 
+        opts.reverse_merge!({ delegation: true })
+
         ar_class = model_class_for_sym(ar_name)
         define_active_record_methods(ar_name, ar_class)
         define_spira_methods(ar_name, ar_class)
-        define_spira_attr_delegations(ar_name, ar_class)
-        define_active_record_attr_delegations(ar_name, ar_class)
+
+        if opts[:delegation]
+          define_spira_attr_delegations(ar_name, ar_class)
+          define_active_record_attr_delegations(ar_name, ar_class)
+        end
       end
 
       private

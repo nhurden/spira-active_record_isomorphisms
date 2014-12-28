@@ -157,22 +157,66 @@ describe Spira::ActiveRecordIsomorphisms do
     end
 
     describe "accessing delegated properties" do
-      describe "from the Spira model" do
-        it "can access the email property" do
-          iso_bob, user_bob = bob_pair
-          expect(iso_bob.email).to eq(user_bob.email)
+      context "when delegation is enabled" do
+        describe "from the Spira model" do
+          it "can access the email property" do
+            iso_bob, user_bob = bob_pair
+            expect(iso_bob.email).to eq(user_bob.email)
+          end
+
+          it "can access the encrypted_password property" do
+            iso_bob, user_bob = bob_pair
+            expect(iso_bob.encrypted_password).to eq(user_bob.encrypted_password)
+          end
         end
 
-        it "can access the encrypted_password property" do
-          iso_bob, user_bob = bob_pair
-          expect(iso_bob.encrypted_password).to eq(user_bob.encrypted_password)
+        describe "from the ActiveRecord model" do
+          it "can access the name property" do
+            iso_bob, user_bob = bob_pair
+            expect(user_bob.name).to eq(iso_bob.name)
+          end
         end
       end
 
-      describe "from the ActiveRecord model" do
-        it "can access the name property" do
-          iso_bob, user_bob = bob_pair
-          expect(user_bob.name).to eq(iso_bob.name)
+      context "when delegation is disabled" do
+        before do
+          Object.send(:remove_const, :User) if defined? User
+          Object.send(:remove_const, :IsomorphicPerson) if defined? IsomorphicPerson
+          Object.send(:remove_const, :IsomorphicPersonWithoutDelegation) if defined? IsomorphicPersonWithoutDelegation
+
+          class User < ActiveRecord::Base; end
+
+          class IsomorphicPersonWithoutDelegation < Person
+            isomorphic_with :user, delegation: false
+          end
+        end
+
+        let(:bob_pair_without_delegation) do
+          user_bob = new_user_bob
+          iso_bob = IsomorphicPersonWithoutDelegation.for('bob')
+          iso_bob.name = 'Bob'
+          iso_bob.user = user_bob
+          iso_bob.save
+          [iso_bob, user_bob]
+        end
+
+        describe "from the Spira model" do
+          it "cannot access the email property" do
+            iso_bob = bob_pair_without_delegation.first
+            expect { iso_bob.email }.to raise_error(NoMethodError)
+          end
+
+          it "cannot access the encrypted_password property" do
+            iso_bob = bob_pair_without_delegation.first
+            expect { iso_bob.encrypted_password }.to raise_error(NoMethodError)
+          end
+        end
+
+        describe "from the ActiveRecord model" do
+          it "cannot access the name property" do
+            user_bob = bob_pair_without_delegation.second
+            expect { user_bob.name }.to raise_error(NoMethodError)
+          end
         end
       end
     end
