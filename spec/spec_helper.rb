@@ -2,8 +2,6 @@ require 'active_record'
 require 'spira'
 require 'spira/active_record_isomorphisms'
 
-Spira.repository = RDF::Repository.new
-
 ActiveRecord::Base.establish_connection adapter: 'sqlite3', database: ':memory:'
 
 ActiveRecord::Migration.create_table :users do |t|

@@ -2,6 +2,8 @@ require 'spec_helper'
 
 describe Spira::ActiveRecordIsomorphisms do
   before do
+    Spira.repository = RDF::Repository.new
+
     Object.send(:remove_const, :User) if defined? User
     Object.send(:remove_const, :Person) if defined? Person
     Object.send(:remove_const, :IsomorphicPerson) if defined? IsomorphicPerson
