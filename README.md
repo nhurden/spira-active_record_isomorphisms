@@ -1,4 +1,4 @@
-# spira-active\_record\_isomorphisms
+# spira-active\_record\_isomorphisms [![Build Status](https://travis-ci.org/nhurden/spira-active_record_isomorphisms.svg?branch=develop)](https://travis-ci.org/nhurden/spira-active_record_isomorphisms) [![Gem Version](https://badge.fury.io/rb/spira-active_record_isomorphisms.svg)](http://badge.fury.io/rb/spira-active_record_isomorphisms)
 
 Establish isomorphisms between your Spira and ActiveRecord models.
 
