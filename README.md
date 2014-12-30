@@ -41,7 +41,7 @@ end
 ### Associating Models
 
 Models can be associated by setting the corresponding attributes:
-```irb
+```ruby
 > bob = Person.for('bob')
 => <Person:2202810640 @subject: http://example.org/example/people/bob>
 > bob.user = User.find(1)
@@ -68,7 +68,7 @@ Note that:
 ### Delegated Attributes
 
 By default, attributes are delegated in both directions:
-```irb
+```ruby
 > bob = Person.for('bob')
 => <Person:2202810640 @subject: http://example.org/example/people/bob>
 > bob.user = User.find(1)
