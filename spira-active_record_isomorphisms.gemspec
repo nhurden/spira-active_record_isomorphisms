@@ -8,9 +8,9 @@ Gem::Specification.new do |spec|
   spec.version       = Spira::ActiveRecordIsomorphisms::VERSION
   spec.authors       = ["Nicholas Hurden"]
   spec.email         = ["git@nhurden.com"]
-  spec.summary       = %q{TODO: Write a short summary. Required.}
-  spec.description   = spec.summary
-  #spec.homepage      = ""
+  spec.summary       = %q{Establish isomorphisms between your Spira and ActiveRecord models.}
+  spec.description   = %q{spira-active_record_isomorphisms creates and manages bijections between Spira and ActiveRecord models}
+  spec.homepage      = "https://github.com/nhurden/spira-active_record_isomorphisms"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
